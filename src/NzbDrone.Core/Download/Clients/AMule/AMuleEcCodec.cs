@@ -95,7 +95,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
             WriteUInt16(stream, (ushort)((tag.Name << 1) | (hasChildren ? 1 : 0)));
             stream.WriteByte(tag.Type);
-            WriteUInt32(stream, (uint)body.Length);
+            WriteUInt32(stream, (uint)(body.Length - (hasChildren ? 2 : 0)));
             body.Position = 0;
             body.CopyTo(stream);
         }
@@ -113,7 +113,6 @@ namespace NzbDrone.Core.Download.Clients.AMule
             if (hasChildren)
             {
                 var childCount = ReadUInt16(stream);
-                remaining -= 2;
 
                 for (var i = 0; i < childCount; i++)
                 {

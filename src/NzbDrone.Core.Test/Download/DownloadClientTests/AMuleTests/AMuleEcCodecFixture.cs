@@ -31,6 +31,25 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.AMuleTests
         }
 
         [Test]
+        public void should_roundtrip_tag_with_children()
+        {
+            var searchTag = AMuleEcTag.UInt(AMuleEcCodes.TagSearchType, AMuleEcCodes.SearchGlobal);
+            searchTag.Children.Add(AMuleEcTag.String(AMuleEcCodes.TagSearchName, "ubuntu"));
+
+            var encoded = AMuleEcCodec.Encode(new AMuleEcPacket(AMuleEcCodes.OpSearchStart)
+            {
+                Tags = { searchTag }
+            });
+
+            var length = AMuleEcCodec.GetFrameLength(encoded[..8]);
+            var decoded = AMuleEcCodec.Decode(encoded[8..(8 + length)]);
+            var decodedSearchTag = decoded.Find(AMuleEcCodes.TagSearchType);
+
+            decodedSearchTag.IntegerValue.Should().Be(AMuleEcCodes.SearchGlobal);
+            decodedSearchTag.Find(AMuleEcCodes.TagSearchName).StringValue.Should().Be("ubuntu");
+        }
+
+        [Test]
         public void should_create_salted_password_hash()
         {
             var hash = AMuleEcCodec.CreatePasswordHash("secret", 0x1234);

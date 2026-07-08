@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Threading;
 using NLog;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Indexers.Ed2k;
@@ -86,6 +87,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
             var searchTag = AMuleEcTag.UInt(AMuleEcCodes.TagSearchType, (ulong)searchType);
             searchTag.Children.Add(AMuleEcTag.String(AMuleEcCodes.TagSearchName, query));
+            searchTag.Children.Add(AMuleEcTag.String(AMuleEcCodes.TagSearchFileType, string.Empty));
 
             var startResponse = connection.Send(new AMuleEcPacket(AMuleEcCodes.OpSearchStart)
             {
@@ -93,6 +95,9 @@ namespace NzbDrone.Core.Download.Clients.AMule
             });
 
             ThrowIfFailed(startResponse);
+
+            // ponytail: aMule searches are async; replace with progress polling if this delay is too coarse.
+            Thread.Sleep(5000);
 
             var response = connection.Send(new AMuleEcPacket(AMuleEcCodes.OpSearchResults)
             {
