@@ -1,3 +1,8 @@
-type DownloadProtocol = 'usenet' | 'torrent' | 'unknown';
+type DownloadProtocol =
+  | 'usenet'
+  | 'torrent'
+  | 'kad'
+  | 'ed2kGlobal'
+  | 'unknown';
 
 export default DownloadProtocol;

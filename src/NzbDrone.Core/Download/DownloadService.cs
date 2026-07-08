@@ -79,7 +79,9 @@ namespace NzbDrone.Core.Download
             remoteEpisode.SeedConfiguration = _seedConfigProvider.GetSeedConfiguration(remoteEpisode);
 
             // Limit grabs to 2 per second.
-            if (remoteEpisode.Release.DownloadUrl.IsNotNullOrWhiteSpace() && !remoteEpisode.Release.DownloadUrl.StartsWith("magnet:"))
+            if (remoteEpisode.Release.DownloadUrl.IsNotNullOrWhiteSpace() &&
+                !remoteEpisode.Release.DownloadUrl.StartsWith("magnet:") &&
+                !remoteEpisode.Release.DownloadUrl.StartsWith("ed2k://"))
             {
                 var url = new HttpUri(remoteEpisode.Release.DownloadUrl);
                 await _rateLimitService.WaitAndPulseAsync(url.Host, TimeSpan.FromSeconds(2));

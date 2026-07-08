@@ -12,6 +12,14 @@
   background-color: var(--usenetColor);
 }
 
+.kad,
+.ed2kGlobal {
+  composes: label from '~Components/Label.css';
+
+  border-color: var(--torrentColor);
+  background-color: var(--torrentColor);
+}
+
 .unknown {
   composes: label from '~Components/Label.css';
 }
