@@ -73,7 +73,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
                 }
 
                 var remainingSize = Math.Max(0, item.Size - item.CompletedSize);
-                var status = item.Status == AMuleEcCodes.StatusComplete ? DownloadItemStatus.Completed : DownloadItemStatus.Downloading;
+                var status = GetDownloadStatus(item.Status);
                 var outputPath = outputDirectory.IsNullOrWhiteSpace() || item.FileName == null
                     ? new OsPath(null)
                     : _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(Path.Combine(outputDirectory, item.FileName)));
@@ -88,6 +88,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
                     RemainingSize = remainingSize,
                     RemainingTime = status == DownloadItemStatus.Completed ? TimeSpan.Zero : null,
                     Status = status,
+                    Message = GetStatusMessage(item.Status),
                     OutputPath = outputPath,
                     CanMoveFiles = false,
                     CanBeRemoved = false
@@ -180,6 +181,38 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
             _logger.Debug("aMule category '{0}' does not exist and will be created when adding a download.", Settings.TvCategory);
             return null;
+        }
+
+        private static DownloadItemStatus GetDownloadStatus(int status)
+        {
+            switch (status)
+            {
+                case AMuleEcCodes.StatusComplete:
+                    return DownloadItemStatus.Completed;
+                case AMuleEcCodes.StatusPaused:
+                    return DownloadItemStatus.Paused;
+                case AMuleEcCodes.StatusError:
+                case AMuleEcCodes.StatusInsufficient:
+                case AMuleEcCodes.StatusUnknown:
+                    return DownloadItemStatus.Warning;
+                default:
+                    return DownloadItemStatus.Downloading;
+            }
+        }
+
+        private static string GetStatusMessage(int status)
+        {
+            switch (status)
+            {
+                case AMuleEcCodes.StatusError:
+                    return "aMule reports an error for this download.";
+                case AMuleEcCodes.StatusInsufficient:
+                    return "aMule reports insufficient disk space for this download.";
+                case AMuleEcCodes.StatusUnknown:
+                    return "aMule reports an unknown status for this download.";
+                default:
+                    return null;
+            }
         }
     }
 }

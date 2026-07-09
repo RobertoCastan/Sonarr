@@ -45,7 +45,7 @@ namespace NzbDrone.Core.Indexers.AMule
         [FieldDefinition(2, Label = "Password", Type = FieldType.Password, Privacy = PrivacyLevel.Password)]
         public string Password { get; set; }
 
-        [FieldDefinition(3, Label = "Search Network", Type = FieldType.Select, SelectOptions = typeof(AMuleSearchType))]
+        [FieldDefinition(3, Label = "Search Network", Type = FieldType.Select, SelectOptions = typeof(AMuleSearchType), HelpText = "IndexerAMuleSettingsSearchNetworkHelpText")]
         public AMuleSearchType SearchType { get; set; }
 
         [FieldDefinition(4, Type = FieldType.Select, SelectOptions = typeof(RealLanguageFieldConverter), Label = "IndexerSettingsMultiLanguageRelease", HelpText = "IndexerSettingsMultiLanguageReleaseHelpText", Advanced = true)]

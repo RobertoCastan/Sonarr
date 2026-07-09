@@ -53,6 +53,10 @@ namespace NzbDrone.Core.Download.Clients.AMule
         public const byte DetailFull = 2;
         public const byte SearchGlobal = 1;
         public const byte SearchKad = 2;
+        public const byte StatusError = 4;
+        public const byte StatusInsufficient = 5;
+        public const byte StatusUnknown = 6;
+        public const byte StatusPaused = 7;
         public const byte StatusComplete = 9;
         public const ushort ProtocolVersion = 0x0204;
         public const uint PrefsCategories = 0x00000001;

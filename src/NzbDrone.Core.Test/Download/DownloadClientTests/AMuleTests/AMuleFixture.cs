@@ -107,6 +107,35 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.AMuleTests
             status.OutputRootFolders.Single().FullPath.Should().Be("/downloads/sonarr");
         }
 
+        [TestCase(AMuleEcCodes.StatusPaused, DownloadItemStatus.Paused, null)]
+        [TestCase(AMuleEcCodes.StatusError, DownloadItemStatus.Warning, "error")]
+        public void should_map_queue_status(int amuleStatus, DownloadItemStatus downloadStatus, string message)
+        {
+            Mocker.GetMock<IAMuleProxy>()
+                .Setup(v => v.GetQueue(It.IsAny<AMuleSettings>()))
+                .Returns(new List<AMuleQueueItem>
+                {
+                    new AMuleQueueItem
+                    {
+                        FileName = "Droned.S01E01.mkv",
+                        Size = 12345,
+                        CompletedSize = 100,
+                        Hash = "0123456789ABCDEF0123456789ABCDEF",
+                        Status = amuleStatus,
+                        Category = 1
+                    }
+                });
+
+            var item = Subject.GetItems().Single();
+
+            item.Status.Should().Be(downloadStatus);
+
+            if (message != null)
+            {
+                item.Message.Should().Contain(message);
+            }
+        }
+
         [Test]
         public void should_warn_when_category_is_empty()
         {
