@@ -16,6 +16,7 @@ namespace NzbDrone.Core.Indexers.AMule
             RuleFor(c => c.Host).ValidHost();
             RuleFor(c => c.Port).InclusiveBetween(1, 65535);
             RuleFor(c => c.Password).NotEmpty();
+            RuleFor(c => c.SearchDelay).InclusiveBetween(1, 60);
         }
     }
 
@@ -29,6 +30,7 @@ namespace NzbDrone.Core.Indexers.AMule
             Port = 4712;
             Password = string.Empty;
             SearchType = AMuleSearchType.Ed2kGlobal;
+            SearchDelay = 5;
             BaseUrl = string.Empty;
             MultiLanguages = Array.Empty<int>();
             FailDownloads = Array.Empty<int>();
@@ -48,10 +50,13 @@ namespace NzbDrone.Core.Indexers.AMule
         [FieldDefinition(3, Label = "Search Network", Type = FieldType.Select, SelectOptions = typeof(AMuleSearchType), HelpText = "IndexerAMuleSettingsSearchNetworkHelpText")]
         public AMuleSearchType SearchType { get; set; }
 
-        [FieldDefinition(4, Type = FieldType.Select, SelectOptions = typeof(RealLanguageFieldConverter), Label = "IndexerSettingsMultiLanguageRelease", HelpText = "IndexerSettingsMultiLanguageReleaseHelpText", Advanced = true)]
+        [FieldDefinition(4, Label = "Search Delay", Type = FieldType.Number, HelpText = "IndexerAMuleSettingsSearchDelayHelpText", Advanced = true)]
+        public int SearchDelay { get; set; }
+
+        [FieldDefinition(5, Type = FieldType.Select, SelectOptions = typeof(RealLanguageFieldConverter), Label = "IndexerSettingsMultiLanguageRelease", HelpText = "IndexerSettingsMultiLanguageReleaseHelpText", Advanced = true)]
         public IEnumerable<int> MultiLanguages { get; set; }
 
-        [FieldDefinition(5, Type = FieldType.Select, SelectOptions = typeof(FailDownloads), Label = "IndexerSettingsFailDownloads", HelpText = "IndexerSettingsFailDownloadsHelpText", Advanced = true)]
+        [FieldDefinition(6, Type = FieldType.Select, SelectOptions = typeof(FailDownloads), Label = "IndexerSettingsFailDownloads", HelpText = "IndexerSettingsFailDownloadsHelpText", Advanced = true)]
         public IEnumerable<int> FailDownloads { get; set; }
 
         public NzbDroneValidationResult Validate()

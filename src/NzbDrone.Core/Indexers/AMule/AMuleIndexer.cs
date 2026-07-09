@@ -116,7 +116,7 @@ namespace NzbDrone.Core.Indexers.AMule
 
         private List<AMuleSearchResult> Search(AMuleSettings settings, AMuleSearchType searchType, string query)
         {
-            var results = _proxy.Search(settings, searchType, query);
+            var results = _proxy.Search(settings, searchType, query, Settings.SearchDelay);
             results.ForEach(v => v.SearchType = searchType);
             _logger.Debug("aMule {0} search for '{1}' returned {2} results.", searchType, query, results.Count);
 

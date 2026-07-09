@@ -8,6 +8,6 @@ namespace NzbDrone.Core.Download.Clients.AMule
         void AddLink(AMuleSettings settings, string ed2kLink);
         List<AMuleQueueItem> GetQueue(AMuleSettings settings);
         AMulePreferences GetPreferences(AMuleSettings settings);
-        List<AMuleSearchResult> Search(AMuleSettings settings, AMuleSearchType searchType, string query);
+        List<AMuleSearchResult> Search(AMuleSettings settings, AMuleSearchType searchType, string query, int searchDelay);
     }
 }

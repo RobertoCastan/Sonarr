@@ -114,7 +114,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
             return GetPreferences(settings).Categories.First(v => string.Equals(v.Title, settings.TvCategory, StringComparison.InvariantCultureIgnoreCase)).Id;
         }
 
-        public List<AMuleSearchResult> Search(AMuleSettings settings, AMuleSearchType searchType, string query)
+        public List<AMuleSearchResult> Search(AMuleSettings settings, AMuleSearchType searchType, string query, int searchDelay)
         {
             using var connection = Connect(settings);
 
@@ -130,7 +130,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
             ThrowIfFailed(startResponse);
 
             // ponytail: aMule searches are async; replace with progress polling if this delay is too coarse.
-            Thread.Sleep(5000);
+            Thread.Sleep(TimeSpan.FromSeconds(searchDelay));
 
             var response = connection.Send(new AMuleEcPacket(AMuleEcCodes.OpSearchResults)
             {

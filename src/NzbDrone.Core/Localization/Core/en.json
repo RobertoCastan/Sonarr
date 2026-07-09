@@ -982,6 +982,7 @@
   "IndexerSearchNoAutomaticHealthCheckMessage": "No indexers available with Automatic Search enabled, {appName} will not provide any automatic search results",
   "IndexerSearchNoAvailableIndexersHealthCheckMessage": "All search-capable indexers are temporarily unavailable due to recent indexer errors",
   "IndexerSearchNoInteractiveHealthCheckMessage": "No indexers available with Interactive Search enabled, {appName} will not provide any interactive search results",
+  "IndexerAMuleSettingsSearchDelayHelpText": "Seconds to wait for aMule search results after starting each search.",
   "IndexerAMuleSettingsSearchNetworkHelpText": "eD2k Global searches connected servers, Kad searches the Kad network, and Both runs both searches which can take longer.",
   "IndexerSettings": "Indexer Settings",
   "IndexerSettingsAdditionalNewznabParametersHelpText": "Please note if you change the category you will have to add required/restricted rules about the subgroups to avoid foreign language releases.",
