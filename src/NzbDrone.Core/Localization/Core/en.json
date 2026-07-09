@@ -546,6 +546,8 @@
   "DownloadClientTransmissionSettingsUrlBaseHelpText": "Adds a prefix to the {clientName} rpc url, eg {url}, defaults to '{defaultUrl}'",
   "DownloadClientUTorrentTorrentStateError": "uTorrent is reporting an error",
   "DownloadClientUnavailable": "Download Client Unavailable",
+  "DownloadClientAMuleValidationCategoryIncomingMissing": "Incoming directory is not available",
+  "DownloadClientAMuleValidationCategoryIncomingMissingDetail": "Set an Incoming directory in aMule or create the category manually. In Docker, make sure the aMule Incoming path is mounted and visible through the same path or a remote path mapping.",
   "DownloadClientValidationApiKeyIncorrect": "API Key Incorrect",
   "DownloadClientValidationApiKeyRequired": "API Key Required",
   "DownloadClientValidationAuthenticationFailure": "Authentication Failure",

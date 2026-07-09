@@ -11,6 +11,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
         public const byte OpSearchStart = 0x26;
         public const byte OpSearchResults = 0x28;
         public const byte OpGetPreferences = 0x3F;
+        public const byte OpCreateCategory = 0x41;
         public const byte OpAuthSalt = 0x4F;
         public const byte OpAuthPasswd = 0x50;
 
@@ -28,7 +29,14 @@ namespace NzbDrone.Core.Download.Clients.AMule
         public const ushort TagPartFileStatus = 0x0308;
         public const ushort TagPartFileSourceCount = 0x030A;
         public const ushort TagPartFileEd2kLink = 0x030E;
+        public const ushort TagPartFileCategory = 0x030F;
         public const ushort TagPartFileHash = 0x031E;
+        public const ushort TagCategory = 0x1101;
+        public const ushort TagCategoryTitle = 0x1102;
+        public const ushort TagCategoryPath = 0x1103;
+        public const ushort TagCategoryComment = 0x1104;
+        public const ushort TagCategoryColor = 0x1105;
+        public const ushort TagCategoryPriority = 0x1106;
         public const ushort TagSearchFile = 0x0700;
         public const ushort TagSearchType = 0x0701;
         public const ushort TagSearchName = 0x0702;
@@ -36,6 +44,8 @@ namespace NzbDrone.Core.Download.Clients.AMule
         public const ushort TagSearchAvailability = 0x0707;
         public const ushort TagSearchStatus = 0x0708;
         public const ushort TagSelectPrefs = 0x1000;
+        public const ushort TagPrefsCategories = 0x1100;
+        public const ushort TagPrefsDirectories = 0x1A00;
         public const ushort TagDirectoriesIncoming = 0x1A01;
         public const ushort TagServerVersion = 0x050B;
 
@@ -45,5 +55,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
         public const byte SearchKad = 2;
         public const byte StatusComplete = 9;
         public const ushort ProtocolVersion = 0x0204;
+        public const uint PrefsCategories = 0x00000001;
+        public const uint PrefsDirectories = 0x00000200;
     }
 }

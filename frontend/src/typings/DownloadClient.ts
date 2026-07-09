@@ -1,6 +1,6 @@
 import Provider from './Provider';
 
-export type Protocol = 'torrent' | 'usenet' | 'kad' | 'ed2kGlobal' | 'unknown';
+export type Protocol = 'torrent' | 'usenet' | 'ed2k' | 'unknown';
 
 interface DownloadClient extends Provider {
   enable: boolean;

@@ -16,18 +16,19 @@ using NzbDrone.Core.Validation;
 
 namespace NzbDrone.Core.Download.Clients.AMule
 {
-    public abstract class AMule : DownloadClientBase<AMuleSettings>
+    public class AMule : DownloadClientBase<AMuleSettings>
     {
         private readonly IAMuleProxy _proxy;
 
-        public override string Name => Protocol == DownloadProtocol.Kad ? "aMule Kad" : "aMule eD2k Global";
+        public override string Name => "aMule";
+        public override DownloadProtocol Protocol => DownloadProtocol.Ed2k;
 
-        protected AMule(IAMuleProxy proxy,
-                        IConfigService configService,
-                        IDiskProvider diskProvider,
-                        IRemotePathMappingService remotePathMappingService,
-                        Logger logger,
-                        ILocalizationService localizationService)
+        public AMule(IAMuleProxy proxy,
+                     IConfigService configService,
+                     IDiskProvider diskProvider,
+                     IRemotePathMappingService remotePathMappingService,
+                     Logger logger,
+                     ILocalizationService localizationService)
             : base(configService, diskProvider, remotePathMappingService, logger, localizationService)
         {
             _proxy = proxy;
@@ -47,10 +48,24 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
         public override IEnumerable<DownloadClientItem> GetItems()
         {
-            var incoming = _proxy.GetPreferences(Settings).IncomingDirectory;
+            var preferences = _proxy.GetPreferences(Settings);
+            var category = Settings.TvCategory.IsNullOrWhiteSpace()
+                ? null
+                : preferences.Categories.FirstOrDefault(v => string.Equals(v.Title, Settings.TvCategory, StringComparison.InvariantCultureIgnoreCase));
+            var outputDirectory = category?.Path.IsNotNullOrWhiteSpace() == true ? category.Path : preferences.IncomingDirectory;
+
+            if (Settings.TvCategory.IsNotNullOrWhiteSpace() && category == null)
+            {
+                yield break;
+            }
 
             foreach (var item in _proxy.GetQueue(Settings))
             {
+                if (category != null && item.Category != category.Id)
+                {
+                    continue;
+                }
+
                 var hash = item.Hash;
                 if (hash == null && Ed2kLink.TryParse(item.Ed2kLink, out var link))
                 {
@@ -59,14 +74,15 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
                 var remainingSize = Math.Max(0, item.Size - item.CompletedSize);
                 var status = item.Status == AMuleEcCodes.StatusComplete ? DownloadItemStatus.Completed : DownloadItemStatus.Downloading;
-                var outputPath = incoming == null || item.FileName == null
+                var outputPath = outputDirectory.IsNullOrWhiteSpace() || item.FileName == null
                     ? new OsPath(null)
-                    : _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(Path.Combine(incoming, item.FileName)));
+                    : _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(Path.Combine(outputDirectory, item.FileName)));
 
                 var queueItem = new DownloadClientItem
                 {
                     DownloadClientInfo = DownloadClientItemClientInfo.FromDownloadClient(this, false),
                     DownloadId = hash,
+                    Category = Settings.TvCategory,
                     Title = item.FileName,
                     TotalSize = item.Size,
                     RemainingSize = remainingSize,
@@ -103,12 +119,16 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
         public override DownloadClientInfo GetStatus()
         {
-            var incoming = _proxy.GetPreferences(Settings).IncomingDirectory;
+            var preferences = _proxy.GetPreferences(Settings);
+            var category = Settings.TvCategory.IsNullOrWhiteSpace()
+                ? null
+                : preferences.Categories.FirstOrDefault(v => string.Equals(v.Title, Settings.TvCategory, StringComparison.InvariantCultureIgnoreCase));
+            var outputDirectory = category?.Path.IsNotNullOrWhiteSpace() == true ? category.Path : preferences.IncomingDirectory;
 
             return new DownloadClientInfo
             {
                 IsLocalhost = Settings.Host == "localhost" || Settings.Host == "127.0.0.1",
-                OutputRootFolders = incoming == null ? new List<OsPath>() : new List<OsPath> { _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(incoming)) }
+                OutputRootFolders = outputDirectory.IsNullOrWhiteSpace() ? new List<OsPath>() : new List<OsPath> { _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(outputDirectory)) }
             };
         }
 
@@ -122,6 +142,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
             try
             {
                 _proxy.GetVersion(Settings);
+                return TestCategory(_proxy.GetPreferences(Settings));
             }
             catch (DownloadClientAuthenticationException ex)
             {
@@ -139,7 +160,25 @@ namespace NzbDrone.Core.Download.Clients.AMule
                     DetailedDescription = ex.Message
                 };
             }
+        }
 
+        private ValidationFailure TestCategory(AMulePreferences preferences)
+        {
+            if (Settings.TvCategory.IsNullOrWhiteSpace() ||
+                preferences.Categories.Any(v => string.Equals(v.Title, Settings.TvCategory, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                return null;
+            }
+
+            if (preferences.IncomingDirectory.IsNullOrWhiteSpace())
+            {
+                return new NzbDroneValidationFailure(nameof(Settings.TvCategory), _localizationService.GetLocalizedString("DownloadClientAMuleValidationCategoryIncomingMissing"))
+                {
+                    DetailedDescription = _localizationService.GetLocalizedString("DownloadClientAMuleValidationCategoryIncomingMissingDetail")
+                };
+            }
+
+            _logger.Debug("aMule category '{0}' does not exist and will be created when adding a download.", Settings.TvCategory);
             return null;
         }
     }

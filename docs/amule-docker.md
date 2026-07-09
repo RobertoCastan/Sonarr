@@ -29,9 +29,17 @@ and port `4712` reachable from Sonarr.
 
 ## Path mapping
 
-The aMule Incoming path and the path Sonarr can read must resolve to the same
-files. Either mount the same host path at the same container path in both
-containers, or configure Sonarr remote path mapping for the aMule host.
+Use a dedicated aMule category such as `sonarr`. Sonarr filters the aMule queue
+by that category and imports completed files from the category path when aMule
+has one, otherwise from the global Incoming path.
+
+The aMule category/Incoming path and the path Sonarr can read must resolve to
+the same files. Either mount the same host path at the same container path in
+both containers, or configure Sonarr remote path mapping for the aMule host.
+
+If Sonarr needs to create the category automatically, aMule must report a
+non-empty Incoming directory. Without that, create the category manually in the
+aMule Web UI and point it at the shared downloads path.
 
 If `4712` or the EC password is wrong, searching and adding downloads will fail.
 If the eD2k/Kad ports are closed, aMule may still run but searches/downloads can

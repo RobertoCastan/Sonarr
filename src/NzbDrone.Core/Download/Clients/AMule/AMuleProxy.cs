@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using NLog;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Indexers.Ed2k;
 
@@ -26,14 +27,13 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
         public void AddLink(AMuleSettings settings, string ed2kLink)
         {
-            using var connection = Connect(settings);
+            var linkTag = AMuleEcTag.String(AMuleEcCodes.TagString, ed2kLink);
+            linkTag.Children.Add(AMuleEcTag.UInt(AMuleEcCodes.TagPartFileCategory, (ulong)GetOrCreateCategory(settings)));
 
+            using var connection = Connect(settings);
             var response = connection.Send(new AMuleEcPacket(AMuleEcCodes.OpAddLink)
             {
-                Tags =
-                {
-                    AMuleEcTag.String(AMuleEcCodes.TagString, ed2kLink)
-                }
+                Tags = { linkTag }
             });
 
             ThrowIfFailed(response);
@@ -69,16 +69,49 @@ namespace NzbDrone.Core.Download.Clients.AMule
                 Tags =
                 {
                     AMuleEcTag.UInt(AMuleEcCodes.TagDetailLevel, AMuleEcCodes.DetailFull),
-                    AMuleEcTag.Empty(AMuleEcCodes.TagSelectPrefs)
+                    AMuleEcTag.UInt(AMuleEcCodes.TagSelectPrefs, AMuleEcCodes.PrefsCategories | AMuleEcCodes.PrefsDirectories)
                 }
             });
 
             ThrowIfFailed(response);
 
-            return new AMulePreferences
+            return ToPreferences(response);
+        }
+
+        private int GetOrCreateCategory(AMuleSettings settings)
+        {
+            if (settings.TvCategory.IsNullOrWhiteSpace())
             {
-                IncomingDirectory = response.Find(AMuleEcCodes.TagDirectoriesIncoming)?.StringValue
-            };
+                return 0;
+            }
+
+            var preferences = GetPreferences(settings);
+            var category = preferences.Categories.FirstOrDefault(v => string.Equals(v.Title, settings.TvCategory, StringComparison.InvariantCultureIgnoreCase));
+
+            if (category != null)
+            {
+                return category.Id;
+            }
+
+            if (preferences.IncomingDirectory.IsNullOrWhiteSpace())
+            {
+                throw new DownloadClientException("aMule category cannot be created because the Incoming directory is not available.");
+            }
+
+            var categoryTag = AMuleEcTag.UInt(AMuleEcCodes.TagCategory, 0);
+            categoryTag.Children.Add(AMuleEcTag.String(AMuleEcCodes.TagCategoryTitle, settings.TvCategory));
+            categoryTag.Children.Add(AMuleEcTag.String(AMuleEcCodes.TagCategoryPath, preferences.IncomingDirectory));
+            categoryTag.Children.Add(AMuleEcTag.String(AMuleEcCodes.TagCategoryComment, string.Empty));
+            categoryTag.Children.Add(AMuleEcTag.UInt(AMuleEcCodes.TagCategoryColor, 0));
+            categoryTag.Children.Add(AMuleEcTag.UInt(AMuleEcCodes.TagCategoryPriority, 0));
+
+            using var connection = Connect(settings);
+            ThrowIfFailed(connection.Send(new AMuleEcPacket(AMuleEcCodes.OpCreateCategory)
+            {
+                Tags = { categoryTag }
+            }));
+
+            return GetPreferences(settings).Categories.First(v => string.Equals(v.Title, settings.TvCategory, StringComparison.InvariantCultureIgnoreCase)).Id;
         }
 
         public List<AMuleSearchResult> Search(AMuleSettings settings, AMuleSearchType searchType, string query)
@@ -131,7 +164,8 @@ namespace NzbDrone.Core.Download.Clients.AMule
                 Hash = tag.Find(AMuleEcCodes.TagPartFileHash)?.HashValue,
                 Ed2kLink = tag.Find(AMuleEcCodes.TagPartFileEd2kLink)?.StringValue,
                 Sources = (int)(tag.Find(AMuleEcCodes.TagPartFileSourceCount)?.IntegerValue ?? 0),
-                Status = (int)(tag.Find(AMuleEcCodes.TagPartFileStatus)?.IntegerValue ?? 0)
+                Status = (int)(tag.Find(AMuleEcCodes.TagPartFileStatus)?.IntegerValue ?? 0),
+                Category = (int)(tag.Find(AMuleEcCodes.TagPartFileCategory)?.IntegerValue ?? 0)
             };
 
             if (item.Hash == null && Ed2kLink.TryParse(item.Ed2kLink, out var link))
@@ -164,6 +198,26 @@ namespace NzbDrone.Core.Download.Clients.AMule
             }
 
             return result;
+        }
+
+        private static AMulePreferences ToPreferences(AMuleEcPacket response)
+        {
+            var categoriesTag = response.Find(AMuleEcCodes.TagPrefsCategories);
+            var directoriesTag = response.Find(AMuleEcCodes.TagPrefsDirectories);
+
+            return new AMulePreferences
+            {
+                IncomingDirectory = response.Find(AMuleEcCodes.TagDirectoriesIncoming)?.StringValue ?? directoriesTag?.Find(AMuleEcCodes.TagDirectoriesIncoming)?.StringValue,
+                Categories = categoriesTag?.Children
+                    .Where(v => v.Name == AMuleEcCodes.TagCategory)
+                    .Select(v => new AMuleCategory
+                    {
+                        Id = (int)v.IntegerValue,
+                        Title = v.Find(AMuleEcCodes.TagCategoryTitle)?.StringValue,
+                        Path = v.Find(AMuleEcCodes.TagCategoryPath)?.StringValue
+                    })
+                    .ToList() ?? new List<AMuleCategory>()
+            };
         }
 
         private static void ThrowIfFailed(AMuleEcPacket packet)

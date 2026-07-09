@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Equ;
 using FluentValidation;
 using NzbDrone.Core.Annotations;
+using NzbDrone.Core.Download.Clients.AMule;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Validation;
 
@@ -27,6 +28,7 @@ namespace NzbDrone.Core.Indexers.AMule
             Host = "localhost";
             Port = 4712;
             Password = string.Empty;
+            SearchType = AMuleSearchType.Ed2kGlobal;
             BaseUrl = string.Empty;
             MultiLanguages = Array.Empty<int>();
             FailDownloads = Array.Empty<int>();
@@ -43,10 +45,13 @@ namespace NzbDrone.Core.Indexers.AMule
         [FieldDefinition(2, Label = "Password", Type = FieldType.Password, Privacy = PrivacyLevel.Password)]
         public string Password { get; set; }
 
-        [FieldDefinition(3, Type = FieldType.Select, SelectOptions = typeof(RealLanguageFieldConverter), Label = "IndexerSettingsMultiLanguageRelease", HelpText = "IndexerSettingsMultiLanguageReleaseHelpText", Advanced = true)]
+        [FieldDefinition(3, Label = "Search Network", Type = FieldType.Select, SelectOptions = typeof(AMuleSearchType))]
+        public AMuleSearchType SearchType { get; set; }
+
+        [FieldDefinition(4, Type = FieldType.Select, SelectOptions = typeof(RealLanguageFieldConverter), Label = "IndexerSettingsMultiLanguageRelease", HelpText = "IndexerSettingsMultiLanguageReleaseHelpText", Advanced = true)]
         public IEnumerable<int> MultiLanguages { get; set; }
 
-        [FieldDefinition(4, Type = FieldType.Select, SelectOptions = typeof(FailDownloads), Label = "IndexerSettingsFailDownloads", HelpText = "IndexerSettingsFailDownloadsHelpText", Advanced = true)]
+        [FieldDefinition(5, Type = FieldType.Select, SelectOptions = typeof(FailDownloads), Label = "IndexerSettingsFailDownloads", HelpText = "IndexerSettingsFailDownloadsHelpText", Advanced = true)]
         public IEnumerable<int> FailDownloads { get; set; }
 
         public NzbDroneValidationResult Validate()

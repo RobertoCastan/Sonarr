@@ -1,6 +1,5 @@
 using FluentValidation;
 using NzbDrone.Core.Annotations;
-using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Validation;
 
 namespace NzbDrone.Core.Download.Clients.AMule
@@ -12,6 +11,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
             RuleFor(c => c.Host).ValidHost();
             RuleFor(c => c.Port).InclusiveBetween(1, 65535);
             RuleFor(c => c.Password).NotEmpty();
+            RuleFor(c => c.TvCategory).NotEmpty().WithMessage("A category is recommended").AsWarning();
         }
     }
 
@@ -24,6 +24,7 @@ namespace NzbDrone.Core.Download.Clients.AMule
             Host = "localhost";
             Port = 4712;
             Password = string.Empty;
+            TvCategory = "sonarr";
         }
 
         [FieldDefinition(0, Label = "Host", Type = FieldType.Textbox)]
@@ -34,6 +35,9 @@ namespace NzbDrone.Core.Download.Clients.AMule
 
         [FieldDefinition(2, Label = "Password", Type = FieldType.Password, Privacy = PrivacyLevel.Password)]
         public string Password { get; set; }
+
+        [FieldDefinition(3, Label = "Category", Type = FieldType.Textbox, HelpText = "DownloadClientSettingsCategoryHelpText")]
+        public string TvCategory { get; set; }
 
         public override NzbDroneValidationResult Validate()
         {

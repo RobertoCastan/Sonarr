@@ -12,8 +12,7 @@
   background-color: var(--usenetColor);
 }
 
-.kad,
-.ed2kGlobal {
+.ed2k {
   composes: label from '~Components/Label.css';
 
   border-color: var(--torrentColor);

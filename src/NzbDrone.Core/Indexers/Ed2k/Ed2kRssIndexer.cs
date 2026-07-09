@@ -9,7 +9,7 @@ namespace NzbDrone.Core.Indexers.Ed2k
     public class Ed2kRssIndexer : HttpIndexerBase<Ed2kRssIndexerSettings>
     {
         public override string Name => "eD2k RSS Feed";
-        public override DownloadProtocol Protocol => DownloadProtocol.Ed2kGlobal;
+        public override DownloadProtocol Protocol => DownloadProtocol.Ed2k;
         public override bool SupportsSearch => false;
         public override int PageSize => 0;
 
