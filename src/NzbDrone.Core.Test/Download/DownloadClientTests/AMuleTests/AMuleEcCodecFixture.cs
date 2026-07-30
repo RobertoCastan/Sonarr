@@ -22,7 +22,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.AMuleTests
 
             var encoded = AMuleEcCodec.Encode(packet);
             var length = AMuleEcCodec.GetFrameLength(encoded[..8]);
-            var payload = encoded[8..(8 + length)];
+            var payload = encoded[8.. (8 + length)];
             var decoded = AMuleEcCodec.Decode(payload);
 
             decoded.OpCode.Should().Be(AMuleEcCodes.OpAuthReq);
@@ -42,7 +42,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.AMuleTests
             });
 
             var length = AMuleEcCodec.GetFrameLength(encoded[..8]);
-            var decoded = AMuleEcCodec.Decode(encoded[8..(8 + length)]);
+            var decoded = AMuleEcCodec.Decode(encoded[8.. (8 + length)]);
             var decodedSearchTag = decoded.Find(AMuleEcCodes.TagSearchType);
 
             decodedSearchTag.IntegerValue.Should().Be(AMuleEcCodes.SearchGlobal);

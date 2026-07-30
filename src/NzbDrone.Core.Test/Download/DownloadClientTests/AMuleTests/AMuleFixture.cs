@@ -10,7 +10,6 @@ using NzbDrone.Core.Indexers.Ed2k;
 using NzbDrone.Core.Localization;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.RemotePathMappings;
-using NzbDrone.Core.Test.Download.DownloadClientTests;
 using NzbDrone.Core.Validation;
 
 namespace NzbDrone.Core.Test.Download.DownloadClientTests.AMuleTests
