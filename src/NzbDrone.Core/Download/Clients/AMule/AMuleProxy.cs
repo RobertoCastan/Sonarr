@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Threading;
 using NLog;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.Download.Clients;
 using NzbDrone.Core.Indexers.Ed2k;
 
 namespace NzbDrone.Core.Download.Clients.AMule
